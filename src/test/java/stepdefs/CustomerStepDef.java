@@ -26,7 +26,8 @@ public class CustomerStepDef {
         List<Map<String, Object>> tableRows = dataTable.asMaps(String.class, String.class);
         Map<String,Object> columns = tableRows.get(0);
         Response response = customers.createCustomer(columns);
-        valueRepo.valueHashMap.put("createdCustomer",response.getBody().path("first_name"));
+        if(response.getBody().path("first_name") != null)
+            valueRepo.valueHashMap.put("createdCustomer",response.getBody().path("first_name"));
         valueRepo.valueHashMap.put("responseStatusCode",String.valueOf(response.statusCode()));
         valueRepo.setRestAssuredResponse(response);
     }
@@ -42,7 +43,44 @@ public class CustomerStepDef {
 
     @And("{string} must be {string}")
     public void mustBe(String key, String value) {
-        Assert.assertEquals(valueRepo.getRestAssuredResponse().getBody().path(key),value);
+        if(value.equals("NULL"))
+            Assert.assertNull(valueRepo.getRestAssuredResponse().getBody().path(key));
+        else
+            Assert.assertEquals(valueRepo.getRestAssuredResponse().getBody().path(key),value);
+    }
+
+    @And("Get created user")
+    public void getCreatedUser() {
+        Response response = customers.getCustomer(valueRepo.valueHashMap.get("createdCustomer"));
+        valueRepo.valueHashMap.put("responseStatusCode",String.valueOf(response.statusCode()));
+        valueRepo.setRestAssuredResponse(response);
+    }
+
+    @Given("Get customer with {string} first name")
+    public void getCustomerWithFirstName(String firstName) {
+        Response response = customers.getCustomer(firstName);
+        valueRepo.valueHashMap.put("responseStatusCode",String.valueOf(response.statusCode()));
+        valueRepo.setRestAssuredResponse(response);
+    }
+
+    @And("Response must be null")
+    public void responseMustBeNull() {
+        Assert.assertEquals("",valueRepo.getRestAssuredResponse().asPrettyString());
+    }
+
+    @And("Update customer with given fields by using PATCH method")
+    public void updateCustomerWithGivenFieldsByUsingPATCHMethod(DataTable dataTable) {
+        List<Map<String, Object>> tableRows = dataTable.asMaps(String.class, String.class);
+        Map<String,Object> columns = tableRows.get(0);
+        Response response = customers.updateCustomer(columns);
+        valueRepo.valueHashMap.put("responseStatusCode",String.valueOf(response.statusCode()));
+        valueRepo.setRestAssuredResponse(response);
+    }
+
+    @And("Delete customer thats firstName is {string}")
+    public void deleteCustomerThatSFirstNameIs(String firstName) {
+        Response response = customers.deleteCustomer(firstName);
+        valueRepo.valueHashMap.put("responseStatusCode",String.valueOf(response.statusCode()));
     }
 }
 

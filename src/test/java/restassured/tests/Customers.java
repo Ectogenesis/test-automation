@@ -36,4 +36,32 @@ public class Customers {
                 .then().log().all()
                 .extract().response();
     }
+
+    public Response getCustomer(String firstName){
+        RestAssured.baseURI = customerBaseUrl;
+
+        return given()
+                .header("Content-Type","application/json")
+                .when().log().all()
+                .get("/"+firstName)
+                .then().log().all()
+                .extract().response();
+    }
+
+    public Response updateCustomer(Map<String, Object> fields){
+        RestAssured.baseURI = customerBaseUrl;
+
+        JSONObject jsonObject = new JSONObject();
+        fields.keySet().forEach(field -> {
+            jsonObject.put(field, fields.get(field));
+        });
+
+        return given()
+                .header("Content-Type","application/json")
+                .when().log().all()
+                .body(jsonObject.toString())
+                .patch()
+                .then().log().all()
+                .extract().response();
+    }
 }
